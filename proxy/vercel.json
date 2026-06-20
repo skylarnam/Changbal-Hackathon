@@ -1,12 +1,7 @@
 {
   "functions": {
-    "api/analyze-product.ts": {
-      "runtime": "nodejs22.x",
+    "api/*.ts": {
       "maxDuration": 60
-    },
-    "api/health.ts": {
-      "runtime": "nodejs22.x",
-      "maxDuration": 10
     }
   }
 }
