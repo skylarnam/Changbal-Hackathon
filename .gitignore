@@ -1,5 +1,6 @@
 node_modules/
 .pnpm-store/
+.gradle-home/
 android/.gradle-home/
 .expo/
 dist/

@@ -8,7 +8,8 @@ module.exports = [
       ".expo/**",
       "coverage/**",
       "artifacts/**",
-      "proxy/**"
+      "proxy/**",
+      "lovable/**"
     ]
   }
 ];

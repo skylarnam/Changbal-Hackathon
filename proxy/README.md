@@ -2,6 +2,8 @@
 
 This Vercel subproject is the only place where `GEMINI_API_KEY` is used. Set the Vercel Root Directory to `proxy/`.
 
+Production base URL: `https://changbal-hackathon.vercel.app`
+
 ## Responsibility Boundary
 
 The proxy extracts visible product information from product-front and ingredient-label images. It does not analyze vanity, score ingredients, recommend skincare, search the internet, store users, or use skin/face photos. All interpretation remains deterministic Expo app logic.
@@ -56,9 +58,18 @@ The smoke command never prints keys. Do not commit smoke images.
 ## Vercel Deployment
 
 1. Create/link a Vercel project with Root Directory `proxy`.
-2. Add Preview and Production environment variables: `GEMINI_API_KEY`, `GEMINI_MODEL`, `ANALYZER_CLIENT_TOKEN`.
-3. Deploy Preview.
-4. Verify `/api/health` and invalid-token rejection.
-5. Deploy Production only when authorized.
+2. Use Framework Preset `Other`.
+3. Add Preview and Production environment variables: `GEMINI_API_KEY`, `GEMINI_MODEL`, `ANALYZER_CLIENT_TOKEN`.
+4. Push to GitHub. After one-time Vercel import, Git pushes trigger deployments.
+5. Verify `/api/health` and invalid-token rejection.
+6. Deploy Production only when authorized.
 
 Changed environment variables require redeployment. Do not enable paid billing automatically.
+
+Current production health endpoint:
+
+```text
+GET https://changbal-hackathon.vercel.app/api/health
+```
+
+If `geminiConfigured` is `false`, `GEMINI_API_KEY` is absent from that deployment or the deployment predates the variable change. Add the variable in Vercel and redeploy.

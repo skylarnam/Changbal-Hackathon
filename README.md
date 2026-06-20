@@ -16,11 +16,11 @@ Remote mode sends product images to the shared HTTPS proxy:
 
 ```sh
 EXPO_PUBLIC_ANALYZER_MODE=remote
-EXPO_PUBLIC_ANALYSIS_API_URL=https://<vercel-domain>
+EXPO_PUBLIC_ANALYSIS_API_URL=https://changbal-hackathon.vercel.app
 EXPO_PUBLIC_ANALYZER_CLIENT_TOKEN=
 ```
 
-Do not include `/api/analyze-product` in `EXPO_PUBLIC_ANALYSIS_API_URL`.
+Do not include `/api/analyze-product` in `EXPO_PUBLIC_ANALYSIS_API_URL`. A trailing slash is safe; the app normalizes it.
 
 ## Gemini Proxy
 
@@ -37,6 +37,15 @@ Boundary:
 - The proxy extracts visible product-front and ingredient-label text only.
 - The proxy does not analyze vanity, recommend skincare, score ingredients, browse/search, scrape EWG, store users, process payments, or analyze skin/face photos.
 - All benefit/concern matching, vanity scoring, AM/PM routines, creator personalization, and purchase prioritization stay in the Expo app.
+
+Production proxy base URL: `https://changbal-hackathon.vercel.app`
+
+Vercel project settings:
+
+- Root Directory: `proxy`
+- Framework Preset: Other
+- Production branch: `main`
+- Git pushes after the one-time Vercel import trigger deployments
 
 See [proxy/README.md](proxy/README.md).
 
@@ -77,7 +86,7 @@ pnpm proxy:test
 
 Android emulator and physical Android can use mock mode immediately. Remote mode needs `EXPO_PUBLIC_ANALYSIS_API_URL`. A deployed HTTPS proxy URL is required for physical phones; local `10.0.2.2` only works from Android emulator when explicitly configured.
 
-iPhone Expo Go also needs either the deployed HTTPS proxy URL or a development tunnel/LAN URL reachable from the phone.
+iPhone Expo Go also works with the same deployed HTTPS proxy URL: `https://changbal-hackathon.vercel.app`. A development tunnel/LAN URL is only needed when testing an undeployed local proxy.
 
 ## Image Upload Rules
 
@@ -114,6 +123,8 @@ ANALYZER_CLIENT_TOKEN=
 ```
 
 `ANALYZER_CLIENT_TOKEN` is bundled in the Expo app, is not a true secret, is not user authentication, and should be rotated after the hackathon.
+
+Set proxy variables in both Vercel Preview and Production. Changing Vercel environment variables requires a new deployment before `/api/health` reflects the new configuration.
 
 ## Safety and Age
 
