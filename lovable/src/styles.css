@@ -1,0 +1,164 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  
+  /* 베이스 배경 및 텍스트 (포근한 크림 아이보리 & 딥 차콜) */
+  --background: oklch(0.98 0.005 75.0);          /* #FAF7F2 (따뜻한 아이보리) */
+  --foreground: oklch(0.24 0.005 75.0);          /* #2A2A2A (부드러운 다크 차콜) */
+  
+  /* 카드 및 팝업 요소 (순백색 레이어) */
+  --card: oklch(1 0 0);                          /* #FFFFFF (완전한 화이트) */
+  --card-foreground: oklch(0.24 0.005 75.0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.005 75.0);
+  
+  /* 브랜드 메인 액센트 (세련된 뮤트 올리브 그린) */
+  --primary: oklch(0.42 0.04 145.0);             /* #3A5040 (내추럴 올리브 그린) */
+  --primary-foreground: oklch(0.98 0.005 75.0);
+  
+  /* 보조 및 흐린 요소 (차분한 세이지 세컨더리) */
+  --secondary: oklch(0.96 0.01 145.0);           /* #F0F4EE (연한 세이지 틴트) */
+  --secondary-foreground: oklch(0.42 0.04 145.0);
+  --muted: oklch(0.96 0.01 145.0);
+  --muted-foreground: oklch(0.55 0.02 145.0);    /* 중채도 그레이시 그린 */
+  
+  /* 강조 및 피드백 상태 */
+  --accent: oklch(0.96 0.01 145.0);
+  --accent-foreground: oklch(0.42 0.04 145.0);
+  
+  /* 성분 경고/주의 상태 (쨍한 레드 대신 감성적인 코지 코랄) */
+  --destructive: oklch(0.72 0.12 45.0);          /* #E9967A (따뜻한 코랄) */
+  --destructive-foreground: oklch(1 0 0);
+  
+  /* 경계선 및 입력창 (부드러운 오프화이트 베이지) */
+  --border: oklch(0.92 0.005 75.0);              /* #E6E2DA (부드러운 경계) */
+  --input: oklch(0.92 0.005 75.0);
+  --ring: oklch(0.42 0.04 145.0 / 30%);          /* 메인 그린의 은은한 링 */
+  
+  /* 차트 및 데이터 시각화 (포근한 자연의 색조들) */
+  --chart-1: oklch(0.42 0.04 145.0);             /* 메인 올리브 */
+  --chart-2: oklch(0.72 0.12 45.0);              /* 코지 코랄 (주의 성분 지표) */
+  --chart-3: oklch(0.82 0.05 140.0);             /* 파스텔 세이지 (안전 성분 지표) */
+  --chart-4: oklch(0.88 0.06 70.0);              /* 소프트 옐로우 샌드 */
+  --chart-5: oklch(0.60 0.04 110.0);             /* 차분한 오커 */
+  
+  /* 사이드바 (대시보드 메뉴용) */
+  --sidebar: oklch(0.99 0.003 75.0);
+  --sidebar-foreground: oklch(0.24 0.005 75.0);
+  --sidebar-primary: oklch(0.42 0.04 145.0);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.96 0.01 145.0);
+  --sidebar-accent-foreground: oklch(0.42 0.04 145.0);
+  --sidebar-border: oklch(0.92 0.005 75.0);
+  --sidebar-ring: oklch(0.42 0.04 145.0 / 20%);
+}
+
+.dark {
+  /* 다크모드 시에도 너무 차갑지 않게 묵직하고 차분한 무채색 베이스 적용 */
+  --background: oklch(0.18 0.005 75.0);
+  --foreground: oklch(0.95 0.003 75.0);
+  --card: oklch(0.22 0.005 75.0);
+  --card-foreground: oklch(0.95 0.003 75.0);
+  --popover: oklch(0.22 0.005 75.0);
+  --popover-foreground: oklch(0.95 0.003 75.0);
+  --primary: oklch(0.85 0.03 145.0);              /* 다크모드에서는 밝은 세이지 */
+  --primary-foreground: oklch(0.18 0.005 75.0);
+  --secondary: oklch(0.26 0.01 145.0);
+  --secondary-foreground: oklch(0.95 0.003 75.0);
+  --muted: oklch(0.26 0.01 145.0);
+  --muted-foreground: oklch(0.65 0.01 145.0);
+  --accent: oklch(0.26 0.01 145.0);
+  --accent-foreground: oklch(0.95 0.003 75.0);
+  --destructive: oklch(0.65 0.14 45.0);
+  --destructive-foreground: oklch(0.95 0.003 75.0);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.85 0.03 145.0 / 40%);
+  
+  --chart-1: oklch(0.85 0.03 145.0);
+  --chart-2: oklch(0.65 0.14 45.0);
+  --chart-3: oklch(0.75 0.04 140.0);
+  --chart-4: oklch(0.88 0.06 70.0);
+  --chart-5: oklch(0.60 0.04 110.0);
+  
+  --sidebar: oklch(0.22 0.005 75.0);
+  --sidebar-foreground: oklch(0.95 0.003 75.0);
+  --sidebar-primary: oklch(0.85 0.03 145.0);
+  --sidebar-primary-foreground: oklch(0.18 0.005 75.0);
+  --sidebar-accent: oklch(0.26 0.01 145.0);
+  --sidebar-accent-foreground: oklch(0.95 0.003 75.0);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.85 0.03 145.0 / 30%);
+}
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
