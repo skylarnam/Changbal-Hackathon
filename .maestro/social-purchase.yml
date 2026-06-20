@@ -1,0 +1,13 @@
+appId: com.vanitylens.app
+---
+- launchApp
+- tapOn:
+    id: tab-discover
+- tapOn:
+    id: creator-card-1
+- tapOn:
+    id: creator-personalize
+- tapOn:
+    id: purchase-open
+- assertVisible:
+    id: affiliate-disclosure

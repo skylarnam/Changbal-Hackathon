@@ -1,0 +1,17 @@
+appId: com.vanitylens.app
+---
+- launchApp:
+    clearState: true
+- tapOn:
+    id: onboarding-demo-profile
+- tapOn:
+    id: onboarding-submit
+- tapOn:
+    id: tab-scan
+- tapOn:
+    id: scan-demo-hydration
+- tapOn:
+    id: scan-analyze
+- tapOn:
+    id: scan-confirm-add
+- assertVisible: "내 화장대"

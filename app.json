@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "화장대 렌즈",
+    "slug": "vanitylens",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "vanitylens",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "제품 사진 또는 전성분표 이미지를 선택하기 위해 사진 접근 권한이 필요해요.",
+          "cameraPermission": "제품 사진 또는 전성분표를 촬영하기 위해 카메라 권한이 필요해요."
+        }
+      ]
+    ],
+    "android": {
+      "package": "com.vanitylens.app"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.vanitylens.app"
+    },
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

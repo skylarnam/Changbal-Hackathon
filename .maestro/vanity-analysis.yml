@@ -1,0 +1,22 @@
+appId: com.vanitylens.app
+---
+- launchApp
+- tapOn:
+    id: tab-scan
+- tapOn:
+    id: scan-demo-barrier
+- tapOn:
+    id: scan-analyze
+- tapOn:
+    id: scan-confirm-add
+- tapOn:
+    id: tab-scan
+- tapOn:
+    id: scan-demo-retinol
+- tapOn:
+    id: scan-analyze
+- tapOn:
+    id: scan-confirm-add
+- tapOn:
+    id: vanity-analysis-open
+- assertVisible: "화장대 구성 점수"
