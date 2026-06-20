@@ -275,26 +275,35 @@ Expected iOS issues for the teammate's AI session to resolve:
 
 ## External API Placeholder
 
-Real Gemini analysis is not required for local demo. The placeholder flow works without an API key.
+Real Gemini analysis is not required for local demo. Mock mode works without an API key.
 
-To enable real remote analysis:
+To enable real remote analysis through the Vercel proxy:
 
 ```bash
-cp .env.example .env
+cp proxy/.env.example proxy/.env.local
 ```
 
 Then set:
 
 ```bash
-GEMINI_API_KEY=your_real_key
-EXPO_PUBLIC_ANALYZER_MODE=remote
-EXPO_PUBLIC_ANALYZER_URL=http://10.0.2.2:8787/analyze
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3.5-flash
+ANALYZER_CLIENT_TOKEN=
 ```
 
-Run the local proxy:
+In the Expo app environment set:
 
 ```bash
-pnpm analyzer
+EXPO_PUBLIC_ANALYZER_MODE=remote
+EXPO_PUBLIC_ANALYSIS_API_URL=https://<vercel-domain>
+EXPO_PUBLIC_ANALYZER_CLIENT_TOKEN=
 ```
 
-For a physical phone, replace `10.0.2.2` with the Mac's LAN IP or expose the proxy through a tunnel.
+Run the local Vercel proxy if the Vercel CLI is installed:
+
+```bash
+cd proxy
+npm run dev
+```
+
+For a physical phone, use the deployed HTTPS Vercel URL or a tunnel/LAN URL reachable from the phone. Do not put `GEMINI_API_KEY` in Expo public variables.

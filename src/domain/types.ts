@@ -1,4 +1,4 @@
-export type AgeRange = "14-19" | "20s" | "30s" | "40plus";
+export type AgeRange = "18-19" | "20s" | "30s" | "40plus";
 export type SkinType = "dry" | "oily" | "combination" | "normal";
 export type SkinConcern = "dryness" | "sensitivity" | "acne" | "redness" | "dullness" | "barrier" | "antiAging";
 export type SensitivityLevel = "low" | "normal" | "high";
@@ -73,6 +73,10 @@ export interface AnalyzerExtraction {
   ingredients: string[];
   extractionConfidence: number;
   unreadableSections: string[];
+  detectedLanguages?: string[];
+  imageQualityIssues?: string[];
+  requiresUserReview?: boolean;
+  remoteFallbackNotice?: string;
   source: ProductSource;
   imageUri?: string;
 }
@@ -178,6 +182,10 @@ export interface AppStateShape {
   products: Product[];
   followedCreatorIds: string[];
   isProPreview: boolean;
+  remoteAnalysisConsent: {
+    geminiImageTransferAccepted: boolean;
+    updatedAt: string | null;
+  };
   demoSettings: {
     hasLoadedDemoProfile: boolean;
   };

@@ -80,7 +80,7 @@ export const creators: Creator[] = [
     id: "creator-1",
     displayName: "민서의 데모 화장대",
     profile: {
-      ageRange: "14-19",
+      ageRange: "18-19",
       skinType: "oily",
       concerns: ["acne", "sensitivity"]
     },

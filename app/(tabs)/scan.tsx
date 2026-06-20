@@ -1,25 +1,50 @@
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { Image, Platform, StyleSheet } from "react-native";
-import { Button, Card, InlineError, Notice, OptionButton, OptionRow, Screen, SectionTitle, TextField } from "../../src/components/ui";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Image, Platform, StyleSheet, Text, View } from "react-native";
+import { BodyText, Button, Card, InlineError, Notice, OptionButton, OptionRow, Screen, SectionTitle, Tag, TextField } from "../../src/components/ui";
 import { categoryLabels, productCategories } from "../../src/copy/ko";
 import { sampleExtractions } from "../../src/data/sampleProducts";
 import type { AnalyzerExtraction, ProductCategory } from "../../src/domain/types";
-import { getConfiguredAnalyzer } from "../../src/services/analyzer/ProductAnalyzer";
+import {
+  checkAnalyzerHealth,
+  getAnalysisApiBaseUrl,
+  getAnalyzerMode,
+  getConfiguredAnalyzer,
+  MockProductAnalyzer,
+  remoteAnalyzerErrorMessage,
+  type AnalyzerHealth
+} from "../../src/services/analyzer/ProductAnalyzer";
+import { prepareAnalyzerImage } from "../../src/services/analyzer/imagePreprocessing";
 import { useAppState } from "../../src/state/AppContext";
 
+const REMOTE_CONSENT_COPY =
+  "제품 및 전성분표 이미지가 분석을 위해 Google Gemini API로 전송될 수 있어요. 얼굴, 피부 사진, 이름, 연락처 등 개인정보가 포함된 이미지는 업로드하지 마세요.";
+
 export default function ScanScreen() {
-  const { setDraftExtraction } = useAppState();
+  const { state, dispatch, setDraftExtraction } = useAppState();
   const analyzer = useMemo(() => getConfiguredAnalyzer(), []);
+  const analyzerMode = getAnalyzerMode();
+  const apiBaseUrl = getAnalysisApiBaseUrl();
   const [brand, setBrand] = useState("");
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState<ProductCategory>("serum");
   const [rawIngredients, setRawIngredients] = useState("");
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [frontImageUri, setFrontImageUri] = useState<string | null>(null);
+  const [ingredientsImageUri, setIngredientsImageUri] = useState<string | null>(null);
   const [frontOnlyMessage, setFrontOnlyMessage] = useState<string | null>(null);
+  const [remoteFailure, setRemoteFailure] = useState<string | null>(null);
+  const [remoteErrorCode, setRemoteErrorCode] = useState<string | null>(null);
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
+  const [health, setHealth] = useState<AnalyzerHealth | null>(null);
+  const [healthError, setHealthError] = useState<string | null>(null);
+  const [showConsent, setShowConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const canManualAnalyze = productName.trim().length > 0 && rawIngredients.trim().length > 0 && !busy;
+  const hasSelectedImage = Boolean(frontImageUri || ingredientsImageUri);
+  const remoteConsentAccepted = state.remoteAnalysisConsent.geminiImageTransferAccepted;
 
   useEffect(() => {
     ImagePicker.getPendingResultAsync()
@@ -27,14 +52,24 @@ export default function ScanScreen() {
         if (!pending || "code" in pending || pending.canceled || pending.assets.length === 0) {
           return;
         }
-        setImageUri(pending.assets[0]?.uri ?? null);
+        setIngredientsImageUri(pending.assets[0]?.uri ?? null);
       })
       .catch(() => {
         setError("Android Activity 재생성 후 이미지 결과를 복구하지 못했어요. 다시 선택해 주세요.");
       });
   }, []);
 
-  const canManualAnalyze = productName.trim().length > 0 && rawIngredients.trim().length > 0 && !busy;
+  const runHealthCheck = useCallback(async () => {
+    setHealthError(null);
+    try {
+      setHealth(await checkAnalyzerHealth(apiBaseUrl));
+    } catch (caught) {
+      const message = remoteAnalyzerErrorMessage(caught);
+      setHealth(null);
+      setHealthError(message);
+      setRemoteErrorCode(caught instanceof Error && "code" in caught ? String(caught.code) : "HEALTH_CHECK_FAILED");
+    }
+  }, [apiBaseUrl]);
 
   function selectSample(key: keyof typeof sampleExtractions) {
     setDraftExtraction(sampleExtractions[key]);
@@ -47,37 +82,85 @@ export default function ScanScreen() {
     }
     setBusy(true);
     setError(null);
-    setFrontOnlyMessage(null);
+    setRemoteFailure(null);
+    setRemoteErrorCode(null);
     try {
       const result = source === "camera" ? await launchCamera() : await launchGallery();
       if (!result) {
         return;
       }
-      setImageUri(result);
       if (hint === "front") {
-        setFrontOnlyMessage("정확한 분석을 위해 전성분표 사진이나 직접 입력이 필요해요.");
-        setDraftExtraction({
-          brand: "이미지 초안",
-          productName: "제품명 초안",
-          category: null,
-          rawIngredients: "",
-          ingredients: [],
-          extractionConfidence: 0.4,
-          unreadableSections: ["제품 앞면만 있어 전성분을 분석하지 않았어요."],
-          source: "demo",
-          imageUri: result
-        });
-        return;
+        setFrontImageUri(result);
+        if (!ingredientsImageUri) {
+          setFrontOnlyMessage("정확한 분석을 위해 전성분표 사진이나 직접 입력이 필요해요.");
+        }
+      } else {
+        setIngredientsImageUri(result);
+        setFrontOnlyMessage(null);
       }
-      const extraction = await analyzer.extractFromImage({ imageUri: result, hint });
-      setDraftExtraction(extraction);
-      router.push("/scan/review");
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "이미지 처리 중 오류가 발생했어요.";
       setError(`${message} 직접 입력 또는 샘플 제품으로 계속 진행할 수 있어요.`);
     } finally {
       setBusy(false);
     }
+  }
+
+  async function submitImageAnalysis(forceDemo = false, consentOverride = false) {
+    if (busy) {
+      return;
+    }
+    if (!hasSelectedImage) {
+      setError("제품 앞면 또는 전성분표 이미지를 먼저 선택해 주세요.");
+      return;
+    }
+    if (analyzerMode === "remote" && !forceDemo && !remoteConsentAccepted && !consentOverride) {
+      setShowConsent(true);
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    setRemoteFailure(null);
+    setRemoteErrorCode(null);
+    try {
+      const selectedFront = frontImageUri ? await prepareAnalyzerImage(frontImageUri, "front") : undefined;
+      const selectedIngredients = ingredientsImageUri ? await prepareAnalyzerImage(ingredientsImageUri, "ingredients") : undefined;
+      const activeAnalyzer = forceDemo ? new MockProductAnalyzer() : analyzer;
+      const extraction = await activeAnalyzer.extractProductImages({
+        frontImage: selectedFront,
+        ingredientsImage: selectedIngredients,
+        brandHint: brand || undefined,
+        productNameHint: productName || undefined,
+        categoryHint: category
+      });
+      setDraftExtraction(
+        forceDemo
+          ? {
+              ...extraction,
+              remoteFallbackNotice: "원격 분석에 실패해 데모 분석 결과를 표시하고 있어요."
+            }
+          : extraction
+      );
+      router.push("/scan/review");
+    } catch (caught) {
+      const message = remoteAnalyzerErrorMessage(caught);
+      setRemoteFailure(message);
+      setRemoteErrorCode(caught instanceof Error && "code" in caught ? String(caught.code) : "REMOTE_ANALYSIS_FAILED");
+      setError(`${message} 선택한 이미지는 유지했어요. 다시 시도하거나 직접 입력 또는 데모 분석을 사용할 수 있어요.`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function acceptRemoteConsent() {
+    dispatch({ type: "setRemoteAnalysisConsent", value: true, updatedAt: new Date().toISOString() });
+    setShowConsent(false);
+    void submitImageAnalysis(false, true);
+  }
+
+  function revokeRemoteConsent() {
+    dispatch({ type: "setRemoteAnalysisConsent", value: false, updatedAt: new Date().toISOString() });
+    setShowConsent(false);
   }
 
   function submitManual() {
@@ -97,7 +180,7 @@ export default function ScanScreen() {
       extractionConfidence: 1,
       unreadableSections: [],
       source: "manual",
-      imageUri: imageUri ?? undefined
+      imageUri: ingredientsImageUri ?? frontImageUri ?? undefined
     };
     setDraftExtraction(extraction);
     router.push("/scan/review");
@@ -136,8 +219,62 @@ export default function ScanScreen() {
           loading={busy}
           onPress={() => pickImage("gallery", "ingredients")}
         />
-        {imageUri ? <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" /> : null}
+        <View style={styles.previewRow}>
+          {frontImageUri ? <Image source={{ uri: frontImageUri }} style={styles.preview} resizeMode="cover" /> : null}
+          {ingredientsImageUri ? <Image source={{ uri: ingredientsImageUri }} style={styles.preview} resizeMode="cover" /> : null}
+        </View>
         {frontOnlyMessage ? <Notice tone="warning">{frontOnlyMessage}</Notice> : null}
+        {showConsent ? (
+          <View style={styles.panel}>
+            <SectionTitle>원격 이미지 분석 동의</SectionTitle>
+            <BodyText>{REMOTE_CONSENT_COPY}</BodyText>
+            <Button title="동의하고 분석" loading={busy} onPress={acceptRemoteConsent} />
+            <Button title="동의하지 않음" variant="secondary" onPress={() => setShowConsent(false)} />
+          </View>
+        ) : null}
+        <Button
+          title={analyzerMode === "remote" ? "원격 이미지 분석 시작" : "이미지 데모 분석 시작"}
+          testID="analyzer-remote-submit"
+          disabled={!hasSelectedImage || busy}
+          loading={busy}
+          onPress={() => submitImageAnalysis()}
+        />
+        {remoteFailure ? (
+          <View style={styles.panel}>
+            <Tag tone="warning">{remoteErrorCode ?? "REMOTE_ANALYSIS_FAILED"}</Tag>
+            <BodyText>{remoteFailure}</BodyText>
+            <Button title="다시 시도" testID="analyzer-remote-retry" variant="secondary" loading={busy} onPress={() => submitImageAnalysis()} />
+            <Button title="직접 전성분 입력" testID="analyzer-use-manual" variant="secondary" onPress={() => setError("아래 직접 입력 영역에서 제품명과 전성분을 입력해 주세요.")} />
+            <Button title="데모 분석 사용" testID="analyzer-use-demo" variant="secondary" loading={busy} onPress={() => submitImageAnalysis(true)} />
+            <Button title="서버 연결 확인" testID="analyzer-test-health" variant="secondary" onPress={runHealthCheck} />
+          </View>
+        ) : null}
+      </Card>
+      <Card>
+        <Button
+          title="분석 서버 연결 확인"
+          testID="analyzer-diagnostics-open"
+          variant="secondary"
+          onPress={() => {
+            setDiagnosticsOpen(!diagnosticsOpen);
+            if (!diagnosticsOpen) {
+              void runHealthCheck();
+            }
+          }}
+        />
+        {diagnosticsOpen ? (
+          <View style={styles.diagnostics}>
+            <BodyText>모드: {analyzerMode}</BodyText>
+            <BodyText>API: {apiBaseUrl || "미설정"}</BodyText>
+            <Text testID="analyzer-health-status" style={styles.diagnosticText}>
+              상태: {health ? `정상 · ${health.responseTimeMs}ms · ${health.model} · Gemini ${health.geminiConfigured ? "설정됨" : "미설정"}` : healthError ?? "확인 전"}
+            </Text>
+            <BodyText>최근 오류 코드: {remoteErrorCode ?? "없음"}</BodyText>
+            <BodyText>원격 이미지 동의: {remoteConsentAccepted ? "동의됨" : "미동의"}</BodyText>
+            <Button title="다시 확인" testID="analyzer-test-health" variant="secondary" onPress={runHealthCheck} />
+            {remoteConsentAccepted ? <Button title="원격 이미지 분석 동의 철회" variant="danger" onPress={revokeRemoteConsent} /> : null}
+          </View>
+        ) : null}
       </Card>
       <Card>
         <SectionTitle>샘플 제품 빠른 테스트</SectionTitle>
@@ -209,9 +346,28 @@ async function launchGallery(): Promise<string | null> {
 }
 
 const styles = StyleSheet.create({
+  previewRow: {
+    flexDirection: "row",
+    gap: 8
+  },
   preview: {
-    width: "100%",
-    height: 180,
+    flex: 1,
+    minHeight: 140,
     borderRadius: 8
+  },
+  diagnostics: {
+    gap: 8
+  },
+  panel: {
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "#DADCE0",
+    borderRadius: 8,
+    padding: 12,
+    gap: 8
+  },
+  diagnosticText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#202124"
   }
 });

@@ -67,8 +67,9 @@ export default function ReviewScreen() {
   }
 
   return (
-    <Screen title="분석 검토" subtitle="AI 또는 데모 추출 결과를 그대로 믿지 말고 수정한 뒤 분석을 확정해요.">
+      <Screen title="분석 검토" subtitle="AI 또는 데모 추출 결과를 그대로 믿지 말고 수정한 뒤 분석을 확정해요.">
       <Notice>{MEDICAL_REFERENCE_NOTICE}</Notice>
+      {draftExtraction.remoteFallbackNotice ? <Notice tone="warning">{draftExtraction.remoteFallbackNotice}</Notice> : null}
       {draftExtraction.source === "demo" ? <Tag tone="warning">데모 분석 결과</Tag> : null}
       <Card>
         <TextField label="브랜드" value={brand} onChangeText={setBrand} placeholder="브랜드 미상" />

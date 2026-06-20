@@ -3,9 +3,10 @@ import { z } from "zod";
 import type { AppStateShape } from "../../domain/types";
 
 export const STORAGE_KEY = "vanitylens.app-state.v1";
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
-const ageRangeSchema = z.enum(["14-19", "20s", "30s", "40plus"]);
+const ageRangeSchema = z.enum(["18-19", "20s", "30s", "40plus"]);
+const legacyAgeRangeSchema = z.enum(["14-19", "18-19", "20s", "30s", "40plus"]);
 const skinTypeSchema = z.enum(["dry", "oily", "combination", "normal"]);
 const concernSchema = z.enum(["dryness", "sensitivity", "acne", "redness", "dullness", "barrier", "antiAging"]);
 const sensitivitySchema = z.enum(["low", "normal", "high"]);
@@ -31,6 +32,10 @@ export const skinProfileSchema = z.object({
   concerns: z.array(concernSchema).max(2),
   sensitivity: sensitivitySchema,
   avoidedIngredients: z.array(z.string())
+});
+
+const legacySkinProfileSchema = skinProfileSchema.extend({
+  ageRange: legacyAgeRangeSchema
 });
 
 const parsedIngredientSchema = z.object({
@@ -80,10 +85,31 @@ export const appStateSchema = z.object({
   products: z.array(productSchema),
   followedCreatorIds: z.array(z.string()),
   isProPreview: z.boolean(),
+  remoteAnalysisConsent: z.object({
+    geminiImageTransferAccepted: z.boolean(),
+    updatedAt: z.string().nullable()
+  }),
   demoSettings: z.object({
     hasLoadedDemoProfile: z.boolean()
   })
 });
+
+const legacyAppStateSchema = appStateSchema
+  .omit({
+    schemaVersion: true,
+    profile: true,
+    remoteAnalysisConsent: true
+  })
+  .extend({
+    schemaVersion: z.literal(1),
+    profile: legacySkinProfileSchema.nullable(),
+    remoteAnalysisConsent: z
+      .object({
+        geminiImageTransferAccepted: z.boolean(),
+        updatedAt: z.string().nullable()
+      })
+      .optional()
+  });
 
 export const defaultAppState: AppStateShape = {
   schemaVersion: SCHEMA_VERSION,
@@ -92,6 +118,10 @@ export const defaultAppState: AppStateShape = {
   products: [],
   followedCreatorIds: [],
   isProPreview: false,
+  remoteAnalysisConsent: {
+    geminiImageTransferAccepted: false,
+    updatedAt: null
+  },
   demoSettings: {
     hasLoadedDemoProfile: false
   }
@@ -99,7 +129,24 @@ export const defaultAppState: AppStateShape = {
 
 export function validatePersistedState(value: unknown): AppStateShape {
   const parsed = appStateSchema.safeParse(value);
-  return parsed.success ? parsed.data : defaultAppState;
+  if (parsed.success) {
+    return parsed.data;
+  }
+  const legacyParsed = legacyAppStateSchema.safeParse(value);
+  if (!legacyParsed.success) {
+    return defaultAppState;
+  }
+  return {
+    ...legacyParsed.data,
+    schemaVersion: SCHEMA_VERSION,
+    profile: legacyParsed.data.profile
+      ? {
+          ...legacyParsed.data.profile,
+          ageRange: legacyParsed.data.profile.ageRange === "14-19" ? "18-19" : legacyParsed.data.profile.ageRange
+        }
+      : null,
+    remoteAnalysisConsent: legacyParsed.data.remoteAnalysisConsent ?? defaultAppState.remoteAnalysisConsent
+  };
 }
 
 export async function loadPersistedState(): Promise<AppStateShape> {

@@ -11,6 +11,7 @@ export type AppAction =
   | { type: "toggleFinished"; productId: string }
   | { type: "toggleFollow"; creatorId: string }
   | { type: "setProPreview"; value: boolean }
+  | { type: "setRemoteAnalysisConsent"; value: boolean; updatedAt: string }
   | { type: "resetAll" }
   | { type: "loadDemoProfile"; profile: SkinProfile }
   | { type: "loadDemoProducts"; products: Product[] };
@@ -89,6 +90,14 @@ export function appReducer(state: AppStateShape, action: AppAction): AppStateSha
       return {
         ...state,
         isProPreview: action.value
+      };
+    case "setRemoteAnalysisConsent":
+      return {
+        ...state,
+        remoteAnalysisConsent: {
+          geminiImageTransferAccepted: action.value,
+          updatedAt: action.updatedAt
+        }
       };
     case "loadDemoProducts":
       return {

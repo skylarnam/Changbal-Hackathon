@@ -5,6 +5,17 @@ android/.gradle-home/
 dist/
 web-build/
 coverage/
+proxy/.env
+proxy/.env.local
+proxy/.vercel/
+proxy/coverage/
+proxy/dist/
+proxy/dist-test/
+proxy/fixtures/*.jpg
+proxy/fixtures/*.jpeg
+proxy/fixtures/*.png
+proxy/fixtures/*.webp
+proxy/smoke-output*.json
 .DS_Store
 artifacts/android/*.log
 artifacts/android/*.png

@@ -7,7 +7,8 @@ module.exports = [
       "node_modules/**",
       ".expo/**",
       "coverage/**",
-      "artifacts/**"
+      "artifacts/**",
+      "proxy/**"
     ]
   }
 ];

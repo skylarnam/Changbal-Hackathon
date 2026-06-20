@@ -12,7 +12,7 @@ export const PERSONALIZED_SCORE_NOTICE =
 export const AFFILIATE_NOTICE = "이 링크를 통한 구매 시 화장대 주인과 플랫폼이 수수료를 받을 수 있어요.";
 
 export const ageRangeLabels: Record<AgeRange, string> = {
-  "14-19": "만 14~19세",
+  "18-19": "만 18~19세",
   "20s": "20대",
   "30s": "30대",
   "40plus": "40대 이상"
@@ -66,7 +66,7 @@ export const benefitLabels: Record<BenefitCategory, string> = {
   sunProtection: "자외선 차단"
 };
 
-export const ageRanges: AgeRange[] = ["14-19", "20s", "30s", "40plus"];
+export const ageRanges: AgeRange[] = ["18-19", "20s", "30s", "40plus"];
 export const skinTypes: SkinType[] = ["dry", "oily", "combination", "normal"];
 export const sensitivityLevels: SensitivityLevel[] = ["low", "normal", "high"];
 export const skinConcerns: SkinConcern[] = ["dryness", "sensitivity", "acne", "redness", "dullness", "barrier", "antiAging"];

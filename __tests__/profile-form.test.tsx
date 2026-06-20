@@ -12,6 +12,12 @@ describe("ProfileForm", () => {
     await waitFor(() => expect(submit).toHaveBeenCalledWith(demoProfile));
   });
 
+  test("shows the 18+ age requirement copy", async () => {
+    const { getByText } = await render(<ProfileForm initialProfile={null} submitLabel="저장" onSubmit={jest.fn()} />);
+    expect(getByText("이 데모는 만 18세 이상 사용자를 대상으로 합니다.")).toBeTruthy();
+    expect(getByText("만 18~19세")).toBeTruthy();
+  });
+
   test("limits concerns to two", async () => {
     const { getByText } = await render(<ProfileForm initialProfile={demoProfile} submitLabel="저장" onSubmit={jest.fn()} />);
     fireEvent.press(getByText("건조함"));

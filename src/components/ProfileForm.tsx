@@ -69,7 +69,7 @@ export function ProfileForm({ initialProfile, submitLabel, onSubmit, onDemoProfi
 
   return (
     <>
-      <Notice>만 14세 이상 사용을 전제로 하는 데모 앱이에요. 피부 사진은 받지 않아요.</Notice>
+      <Notice>이 데모는 만 18세 이상 사용자를 대상으로 합니다.</Notice>
       <Card>
         <Label>연령대</Label>
         <OptionRow>
