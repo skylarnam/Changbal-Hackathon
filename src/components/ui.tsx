@@ -16,25 +16,36 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export const colors = {
-  background: "#FAFAFA",
+  background: "#FAF7F2",
   surface: "#FFFFFF",
-  text: "#202124",
-  muted: "#5F6368",
-  border: "#DADCE0",
-  accent: "#146C94",
-  accentSoft: "#E8F4F8",
-  warning: "#8A5A00",
-  warningSoft: "#FFF7DF",
-  danger: "#A63446",
-  success: "#16794C"
+  text: "#2F4F4F",
+  body: "#4A443A",
+  muted: "#8B7E6E",
+  mutedSoft: "#B8AC9D",
+  border: "#E6E2DA",
+  accent: "#2F4F4F",
+  accentSoft: "#EEF4EE",
+  sage: "#6B8E6B",
+  coral: "#E89F71",
+  warning: "#9A6A38",
+  warningSoft: "#FFF4E8",
+  danger: "#B95E53",
+  success: "#5E805F",
+  successSoft: "#EAF2EA",
+  sand: "#ECE6DA"
 };
 
-export function Screen({ children, title, subtitle }: PropsWithChildren<{ title?: string; subtitle?: string }>) {
+export function Screen({ children, title, subtitle, eyebrow }: PropsWithChildren<{ title?: string; subtitle?: string; eyebrow?: string }>) {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        {title ? <Text style={styles.title}>{title}</Text> : null}
-        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        {(title || subtitle || eyebrow) ? (
+          <View style={styles.hero}>
+            {eyebrow ? <Text style={styles.eyebrow}>{eyebrow}</Text> : null}
+            {title ? <Text style={styles.title}>{title}</Text> : null}
+            {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+          </View>
+        ) : null}
         {children}
       </ScrollView>
     </SafeAreaView>
@@ -102,6 +113,16 @@ export function BodyText({ children, muted = false }: PropsWithChildren<{ muted?
 
 export function SectionTitle({ children }: PropsWithChildren) {
   return <Text style={styles.sectionTitle}>{children}</Text>;
+}
+
+export function MetricCard({ label, value, caption }: { label: string; value: string; caption?: string }) {
+  return (
+    <View style={styles.metricCard}>
+      <Text style={styles.metricLabel}>{label}</Text>
+      <Text style={styles.metricValue}>{value}</Text>
+      {caption ? <Text style={styles.metricCaption}>{caption}</Text> : null}
+    </View>
+  );
 }
 
 export function Tag({ children, tone = "default" }: PropsWithChildren<{ tone?: "default" | "warning" | "success" }>) {
@@ -174,14 +195,28 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background
   },
   scroll: {
-    padding: 16,
-    paddingBottom: 40,
-    gap: 12
+    padding: 18,
+    paddingBottom: 44,
+    gap: 14
+  },
+  hero: {
+    paddingTop: 6,
+    paddingBottom: 8,
+    gap: 8
+  },
+  eyebrow: {
+    color: colors.mutedSoft,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1.8,
+    textTransform: "uppercase"
   },
   title: {
-    fontSize: 26,
-    fontWeight: "700",
-    color: colors.text
+    fontSize: 30,
+    fontWeight: "800",
+    lineHeight: 36,
+    color: colors.text,
+    letterSpacing: -0.2
   },
   subtitle: {
     fontSize: 15,
@@ -190,33 +225,38 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: "800",
     color: colors.text,
-    marginTop: 8
+    marginTop: 4
   },
   body: {
     fontSize: 15,
     lineHeight: 22,
-    color: colors.text
+    color: colors.body
   },
   muted: {
     color: colors.muted
   },
   card: {
     backgroundColor: colors.surface,
-    borderColor: colors.border,
+    borderColor: "rgba(230, 226, 218, 0.92)",
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 8,
-    padding: 14,
-    gap: 8
+    borderRadius: 18,
+    padding: 16,
+    gap: 10,
+    shadowColor: "#4A443A",
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 2
   },
   button: {
-    minHeight: 48,
-    borderRadius: 8,
+    minHeight: 50,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10
+    paddingHorizontal: 16,
+    paddingVertical: 12
   },
   primaryButton: {
     backgroundColor: colors.accent
@@ -224,10 +264,10 @@ const styles = StyleSheet.create({
   secondaryButton: {
     backgroundColor: colors.accentSoft,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.accent
+    borderColor: "rgba(107, 142, 107, 0.24)"
   },
   dangerButton: {
-    backgroundColor: colors.danger
+    backgroundColor: colors.coral
   },
   ghostButton: {
     backgroundColor: "transparent"
@@ -241,7 +281,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#FFFFFF",
     fontSize: 15,
-    fontWeight: "700",
+    fontWeight: "800",
     textAlign: "center"
   },
   secondaryButtonText: {
@@ -253,20 +293,20 @@ const styles = StyleSheet.create({
   label: {
     color: colors.text,
     fontSize: 14,
-    fontWeight: "700"
+    fontWeight: "800"
   },
   field: {
     gap: 6
   },
   input: {
-    minHeight: 46,
-    borderRadius: 8,
+    minHeight: 48,
+    borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: "#FFFFFF",
-    color: colors.text,
+    backgroundColor: "rgba(255, 255, 255, 0.82)",
+    color: colors.body,
     fontSize: 15
   },
   textArea: {
@@ -285,7 +325,7 @@ const styles = StyleSheet.create({
   },
   option: {
     minHeight: 44,
-    borderRadius: 8,
+    borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
     paddingHorizontal: 12,
@@ -293,34 +333,34 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface
   },
   optionSelected: {
-    backgroundColor: colors.accentSoft,
-    borderColor: colors.accent
+    backgroundColor: "rgba(107, 142, 107, 0.10)",
+    borderColor: colors.sage
   },
   optionText: {
     color: colors.text,
     fontSize: 14
   },
   optionSelectedText: {
-    color: colors.accent,
-    fontWeight: "700"
+    color: colors.text,
+    fontWeight: "800"
   },
   tag: {
     alignSelf: "flex-start",
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     backgroundColor: colors.accentSoft
   },
   warningTag: {
     backgroundColor: colors.warningSoft
   },
   successTag: {
-    backgroundColor: "#E7F4EE"
+    backgroundColor: colors.successSoft
   },
   tagText: {
     color: colors.accent,
     fontSize: 12,
-    fontWeight: "700"
+    fontWeight: "800"
   },
   warningText: {
     color: colors.warning
@@ -329,16 +369,44 @@ const styles = StyleSheet.create({
     color: colors.success
   },
   notice: {
-    borderRadius: 8,
+    borderRadius: 16,
     backgroundColor: colors.accentSoft,
-    padding: 12
+    padding: 13,
+    borderColor: "rgba(107, 142, 107, 0.14)",
+    borderWidth: StyleSheet.hairlineWidth
   },
   warningNotice: {
     backgroundColor: colors.warningSoft
   },
   noticeText: {
-    color: colors.text,
+    color: colors.body,
     fontSize: 13,
     lineHeight: 19
+  },
+  metricCard: {
+    borderRadius: 18,
+    padding: 16,
+    gap: 6,
+    backgroundColor: "rgba(107, 142, 107, 0.08)",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: "rgba(107, 142, 107, 0.18)"
+  },
+  metricLabel: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 1,
+    textTransform: "uppercase"
+  },
+  metricValue: {
+    color: colors.text,
+    fontSize: 32,
+    fontWeight: "900",
+    lineHeight: 38
+  },
+  metricCaption: {
+    color: colors.muted,
+    fontSize: 14,
+    lineHeight: 20
   }
 });

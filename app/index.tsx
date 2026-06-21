@@ -1,9 +1,9 @@
-import { Redirect } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
+import { LovableFlow } from "../src/components/LovableFlow";
 import { useAppState } from "../src/state/AppContext";
 
 export default function IndexRoute() {
-  const { state, loading } = useAppState();
+  const { loading } = useAppState();
 
   if (loading) {
     return (
@@ -13,9 +13,5 @@ export default function IndexRoute() {
     );
   }
 
-  if (!state.onboardingComplete || !state.profile) {
-    return <Redirect href="/onboarding" />;
-  }
-
-  return <Redirect href="/(tabs)/discover" />;
+  return <LovableFlow />;
 }

@@ -2,9 +2,37 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import { Alert } from "react-native";
 import { BodyText, Button, Card, Notice, OptionButton, OptionRow, Screen, SectionTitle, TextField } from "../../src/components/ui";
-import { benefitLabels, categoryLabels, MEDICAL_REFERENCE_NOTICE, productCategories } from "../../src/copy/ko";
-import type { ProductCategory } from "../../src/domain/types";
+import { productCategories } from "../../src/copy/ko";
+import type { BenefitCategory, ProductCategory } from "../../src/domain/types";
 import { useAppState } from "../../src/state/AppContext";
+
+const MEDICAL_REFERENCE_NOTICE =
+  "This is a cosmetic ingredient reference based on the saved label and your profile. Real skin response can vary by formula concentration, usage, and personal condition.";
+
+const categoryEnglishLabels: Record<ProductCategory, string> = {
+  cleanser: "Cleanser",
+  toner: "Toner",
+  essence: "Essence",
+  serum: "Serum",
+  treatment: "Treatment",
+  moisturizer: "Cream / Moisturizer",
+  sunscreen: "Sunscreen",
+  mask: "Mask",
+  oil: "Oil",
+  other: "Other"
+};
+
+const benefitEnglishLabels: Record<BenefitCategory, string> = {
+  hydration: "Hydration",
+  barrier: "Barrier support",
+  soothing: "Soothing",
+  exfoliation: "Exfoliation",
+  antioxidant: "Antioxidant",
+  brightening: "Tone / brightening support",
+  acneCare: "Oil / blemish support",
+  antiAging: "Firmness / aging support",
+  sunProtection: "UV protection"
+};
 
 export default function ProductDetailScreen() {
   const params = useLocalSearchParams<{ id: string }>();
@@ -34,9 +62,9 @@ export default function ProductDetailScreen() {
 
   if (!product || !updatedProduct) {
     return (
-      <Screen title="제품 상세">
-        <Notice tone="warning">삭제되었거나 찾을 수 없는 제품이에요.</Notice>
-        <Button title="내 화장대로 이동" onPress={() => router.replace("/(tabs)/vanity")} />
+      <Screen title="Product Details">
+        <Notice tone="warning">This product was deleted or could not be found.</Notice>
+        <Button title="Go to My Vanity" onPress={() => router.replace("/(tabs)/vanity")} />
       </Screen>
     );
   }
@@ -53,10 +81,10 @@ export default function ProductDetailScreen() {
   }
 
   function confirmDelete() {
-    Alert.alert("제품 삭제", `${currentProduct.name}을 내 화장대에서 삭제할까요?`, [
-      { text: "취소", style: "cancel" },
+    Alert.alert("Delete product", `Remove ${currentProduct.name} from My Vanity?`, [
+      { text: "Cancel", style: "cancel" },
       {
-        text: "삭제",
+        text: "Delete",
         style: "destructive",
         onPress: () => {
           dispatch({ type: "deleteProduct", productId: currentProduct.id });
@@ -67,27 +95,29 @@ export default function ProductDetailScreen() {
   }
 
   return (
-    <Screen title="제품 상세" subtitle="제품 수정·삭제·사용 완료 처리는 저장 후 즉시 분석에 반영돼요.">
+    <Screen title="Product Details" subtitle="Edit, save, finish, or delete this product. Changes update the analysis immediately.">
       <Notice>{MEDICAL_REFERENCE_NOTICE}</Notice>
       <Card>
-        <TextField label="브랜드" value={brand} onChangeText={setBrand} />
-        <TextField label="제품명" value={name} onChangeText={setName} />
-        <SectionTitle>카테고리</SectionTitle>
+        <TextField label="Brand" value={brand} onChangeText={setBrand} />
+        <TextField label="Product name" value={name} onChangeText={setName} />
+        <SectionTitle>Category</SectionTitle>
         <OptionRow>
           {productCategories.map((item) => (
-            <OptionButton key={item} title={categoryLabels[item]} selected={category === item} onPress={() => setCategory(item)} />
+            <OptionButton key={item} title={categoryEnglishLabels[item]} selected={category === item} onPress={() => setCategory(item)} />
           ))}
         </OptionRow>
-        <TextField label="전성분" value={rawIngredients} onChangeText={setRawIngredients} multiline />
-        <Button title="수정 저장" disabled={!name.trim() || !rawIngredients.trim()} onPress={save} />
+        <TextField label="Ingredients" value={rawIngredients} onChangeText={setRawIngredients} multiline />
+        <Button title="Save Changes" disabled={!name.trim() || !rawIngredients.trim()} onPress={save} />
       </Card>
       <Card>
-        <SectionTitle>현재 분석</SectionTitle>
-        <BodyText>주요 기능: {currentProduct.benefits.map((benefit) => benefitLabels[benefit]).join(", ") || "매칭 없음"}</BodyText>
-        <BodyText>상태: {currentProduct.status === "active" ? "사용 중" : "사용 완료"}</BodyText>
-        <BodyText>사용자 회피 성분 일치: {currentProduct.analysis.avoidedMatches.join(", ") || "없음"}</BodyText>
-        <Button title={currentProduct.status === "active" ? "사용 완료 처리" : "사용 완료 취소"} variant="secondary" onPress={() => dispatch({ type: "toggleFinished", productId: currentProduct.id })} />
-        <Button title="제품 삭제" variant="danger" onPress={confirmDelete} />
+        <SectionTitle>Current Analysis</SectionTitle>
+        <BodyText>Primary benefits: {currentProduct.benefits.map((benefit) => benefitEnglishLabels[benefit]).join(", ") || "No major ingredient benefit matched"}</BodyText>
+        <BodyText>Status: {currentProduct.status === "active" ? "Active in My Vanity" : "Finished"}</BodyText>
+        <BodyText>Avoid-list matches: {currentProduct.analysis.avoidedMatches.join(", ") || "None"}</BodyText>
+        <BodyText>Confidence: {Math.round(currentProduct.analysis.extractionConfidence * 100)}%</BodyText>
+        <BodyText>Unmatched ingredients: {currentProduct.analysis.unmatchedCount}</BodyText>
+        <Button title={currentProduct.status === "active" ? "Mark as Finished" : "Mark as Active"} variant="secondary" onPress={() => dispatch({ type: "toggleFinished", productId: currentProduct.id })} />
+        <Button title="Delete Product" variant="danger" onPress={confirmDelete} />
       </Card>
     </Screen>
   );

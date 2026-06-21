@@ -14,7 +14,7 @@ export default function OnboardingScreen() {
   }
 
   return (
-    <Screen title="화장대 렌즈" subtitle="내 화장대를 기준으로 루틴, 중복, 부족한 기능을 정리해요.">
+    <Screen eyebrow="Cozy skin ritual" title="화장대 렌즈" subtitle="내 피부 기준으로 공개 화장대, 성분표, 루틴을 차분하게 다시 정리해요.">
       <ProfileForm
         initialProfile={null}
         submitLabel="프로필 저장"

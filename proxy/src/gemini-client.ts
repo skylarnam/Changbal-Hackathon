@@ -46,7 +46,9 @@ const extractionInstruction = `You are extracting structured text from cosmetic 
 
 Use only information visibly present in the provided images.
 
-The image identified as the front image may contain the brand, product name, and product category.
+The image identified as the front image may contain the brand, product name, product category, product size, Korean/English label text, and sometimes a small visible ingredient box.
+For a front image, carefully read large package text first. Brand names often appear at the top and/or bottom. Product names are often multi-line and may include terms such as peptide, barrier, moisture cream, serum, toner, or sunscreen.
+If the front image contains a readable ingredient box, extract those visible ingredients too, preserving order. If only some ingredients are readable, include the readable ones and describe the unreadable part in unreadableSections.
 
 The image identified as the ingredients image may contain the complete ingredient label.
 

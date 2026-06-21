@@ -8,7 +8,7 @@ export default function DiscoverScreen() {
   const { state, dispatch } = useAppState();
 
   return (
-    <Screen title="발견" subtitle="다른 사람의 공개 화장대를 그대로 따라 사지 말고, 내 피부 기준으로 다시 보세요.">
+    <Screen eyebrow="Discover" title="Public vanities, filtered for you." subtitle="다른 사람의 공개 화장대를 그대로 따라 사지 말고, 내 피부 기준으로 다시 보세요.">
       <Notice>모든 공개 화장대는 데모 데이터이며 실제 사용자, 실제 브랜드, 실제 전성분처럼 주장하지 않아요.</Notice>
       {creators.map((creator, index) => {
         const followed = state.followedCreatorIds.includes(creator.id);

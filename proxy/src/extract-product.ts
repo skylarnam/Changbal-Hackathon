@@ -94,7 +94,7 @@ export function parseAndValidateGeminiResult(text: string, request: Pick<Validat
     throw new ProxyError("GEMINI_INVALID_RESPONSE");
   }
   const result = parsed.data;
-  if (!request.hasIngredientsImage) {
+  if (!request.hasIngredientsImage && !request.hasFrontImage) {
     return {
       ...result,
       rawIngredients: "",
